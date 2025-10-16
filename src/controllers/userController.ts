@@ -1,66 +1,66 @@
 import { Request, Response } from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { User } from "@/models/user";
+import { environment } from "@/config/environment";
 
-// Create User
-export const createUser = async (req: Request, res: Response) => {
+// Register
+export const register = async (req: Request, res: Response) => {
   try {
-    const user = await User.create(req.body);
-    res.status(201).json({ success: true, data: user });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+    const { name, email, password } = req.body;
 
-// Get All Users
-export const getAllUsers = async (_req: Request, res: Response) => {
-  try {
-    const users = await User.find();
-    res.json({ success: true, data: users });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-// Get Single User
-export const getUserById = async (req: Request, res: Response) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user)
+    const existingUser = await User.findOne({ email });
+    if (existingUser)
       return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    res.json({ success: true, data: user });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+        .status(400)
+        .json({ success: false, message: "Email already exists" });
 
-// Update User
-export const updateUser = async (req: Request, res: Response) => {
-  try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
     });
-    if (!user)
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    res.json({ success: true, data: user });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
+
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      user: { id: newUser._id, name: newUser.name, email: newUser.email },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-// Delete User
-export const deleteUser = async (req: Request, res: Response) => {
+// Login
+export const login = async (req: Request, res: Response) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
     if (!user)
       return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    res.json({ success: true, message: "User deleted" });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
+        .status(400)
+        .json({ success: false, message: "Invalid email or password" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid email or password" });
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      environment.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: { id: user._id, name: user.name, email: user.email },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

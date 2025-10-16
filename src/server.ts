@@ -2,14 +2,14 @@ import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { environment } from "@/config/environment";
 import bookRoutes from "@/routes/bookRoutes";
+import authRoutes from "@/routes/authRoutes"; //  add this
+import adminRoutes from "@/routes/adminRoutes";
 
 const app = express();
 
-// Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Connect to MongoDB
 mongoose
   .connect(environment.MONGODB_URI)
   .then(() => console.log("✅ MongoDB connected"))
@@ -18,10 +18,15 @@ mongoose
     process.exit(1);
   });
 
-// Routes
+//  Add Auth Routes
+app.use("/api/auth", authRoutes);
+
+// Add Admin Route
+app.use("/api/admin", adminRoutes);
+
+// Books Routes
 app.use("/api/books", bookRoutes);
 
-// Health check
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ ok: true });
 });

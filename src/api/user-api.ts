@@ -1,5 +1,5 @@
 import { User } from "@/models/user";
-import { IUser } from "@/types/user";
+import { IUser } from "@/models/user";
 
 export const createUserAPI = async (data: IUser) => {
   const user = new User(data);
