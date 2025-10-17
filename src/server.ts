@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { environment } from "@/config/environment";
-import bookRoutes from "@/routes/bookRoutes";
 import authRoutes from "@/routes/authRoutes"; //  add this
 import adminRoutes from "@/routes/adminRoutes";
 
@@ -23,9 +22,6 @@ app.use("/api/auth", authRoutes);
 
 // Add Admin Route
 app.use("/api/admin", adminRoutes);
-
-// Books Routes
-app.use("/api/books", bookRoutes);
 
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ ok: true });

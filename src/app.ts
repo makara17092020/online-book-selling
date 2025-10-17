@@ -1,12 +1,23 @@
 import express from "express";
-import { register, login } from "@/controllers/userController";
+import userRoutes from "@/routes/userRoutes";
+import authRoutes from "@/routes/authRoutes"; // if you have auth routes
+import errorHandler from "@/middlewares/errorHandler";
 
-const router = express.Router();
+const app = express();
 
-// Register new user
-router.post("/register", register);
+// Body parser
+app.use(express.json());
 
-// Login existing user
-router.post("/login", login);
+// Routes
+app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes); // optional, if auth routes exist
 
-export default router;
+// Health check
+app.get("/api/health", (req, res) => {
+  res.json({ success: true, message: "API is running" });
+});
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
+
+export default app;
