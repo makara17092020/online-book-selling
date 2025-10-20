@@ -1,16 +1,18 @@
+import { Types } from "mongoose";
+
+// User interface
 export interface IUser {
-  _id?: string;
   email: string;
   firstName: string;
   lastName: string;
   userName: string;
   password: string;
-  roleId: string;
+  roleId: Types.ObjectId; // 👈 use ObjectId instead of string
   phone?: number;
   age?: number;
 }
 
+// Role interface
 export interface IRole {
-  _id?: string;
   name: string;
 }

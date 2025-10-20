@@ -1,11 +1,15 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Schema, Model } from "mongoose";
 
-const blacklistTokenSchema = new mongoose.Schema({
+export interface IBlacklistTokenDocument extends Document {
+  token: string;
+}
+
+const blacklistTokenSchema = new Schema<IBlacklistTokenDocument>({
   token: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now, expires: "7d" }, // auto-delete after 1 day
 });
 
-export const BlacklistToken = mongoose.model(
-  "BlacklistToken",
-  blacklistTokenSchema
-);
+export const BlacklistToken: Model<IBlacklistTokenDocument> =
+  mongoose.model<IBlacklistTokenDocument>(
+    "BlacklistToken",
+    blacklistTokenSchema
+  );

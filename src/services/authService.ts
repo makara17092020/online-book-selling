@@ -1,43 +1,38 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "@/models/user";
+import { Role } from "@/models/role";
 import { BlacklistToken } from "@/models/blacklistToken";
 import { environment } from "@/config/environment";
+import { IUser } from "@/types/user";
 
 const JWT_SECRET = environment.JWT_SECRET;
 
 // Register service
-export const registerService = async (
-  name: string,
-  email: string,
-  password: string,
-  role: string,
-  adminPassword?: string
-) => {
-  if (role === "admin" && adminPassword !== environment.ADMIN_PASSWORD) {
-    return {
-      success: false,
-      status: 403,
-      message: "Invalid admin password",
-    };
-  }
+export const registerService = async (userData: Partial<IUser>) => {
+  const { email, firstName, lastName, userName, password, phone, age } =
+    userData;
 
   const existing = await User.findOne({ email });
-  if (existing) {
-    return {
-      success: false,
-      status: 400,
-      message: "Email already used",
-    };
-  }
+  if (existing)
+    return { success: false, status: 400, message: "Email already used" };
 
-  const hashed = await bcrypt.hash(password, 10);
+  const hashed = await bcrypt.hash(password!, 10);
 
-  const user = await User.create({
-    name,
+  // Assign default role
+  const defaultRole = await Role.findOne({ name: "User" });
+  if (!defaultRole)
+    return { success: false, status: 500, message: "Default role not found" };
+
+  const newUser = await User.create({
     email,
+    firstName,
+    lastName,
+    userName,
     password: hashed,
-    role: role || "user",
+    roleId: defaultRole._id,
+    phone,
+    age,
   });
 
   return {
@@ -45,49 +40,48 @@ export const registerService = async (
     status: 201,
     message: "User registered successfully",
     data: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
+      id: newUser._id,
+      email: newUser.email,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      userName: newUser.userName,
+      roleId: newUser.roleId,
+      phone: newUser.phone,
+      age: newUser.age,
     },
   };
 };
 
 // Login service
 export const loginService = async (email: string, password: string) => {
-  const user = await User.findOne({ email });
-  if (!user) {
-    return {
-      success: false,
-      status: 404,
-      message: "User not found",
-    };
-  }
+  const user = await User.findOne({ email }).populate("roleId");
+  if (!user) return { success: false, status: 404, message: "User not found" };
 
   const valid = await bcrypt.compare(password, user.password);
-  if (!valid) {
-    return {
-      success: false,
-      status: 400,
-      message: "Invalid password",
-    };
-  }
+  if (!valid)
+    return { success: false, status: 400, message: "Invalid password" };
 
-  const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
-    expiresIn: "1d",
-  });
+  const token = jwt.sign(
+    { id: user._id, role: (user.roleId as any).name },
+    JWT_SECRET,
+    { expiresIn: "1d" }
+  );
 
   return {
     success: true,
     status: 200,
-    message: `Welcome ${user.name}`,
+    message: `Welcome ${user.userName}`,
     data: {
       token,
       user: {
         id: user._id,
-        name: user.name,
         email: user.email,
-        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        userName: user.userName,
+        role: (user.roleId as any).name,
+        phone: user.phone,
+        age: user.age,
       },
     },
   };
@@ -96,10 +90,5 @@ export const loginService = async (email: string, password: string) => {
 // Logout service
 export const logoutService = async (token: string) => {
   await BlacklistToken.create({ token });
-
-  return {
-    success: true,
-    status: 200,
-    message: "Logged out successfully",
-  };
+  return { success: true, status: 200, message: "Logged out successfully" };
 };

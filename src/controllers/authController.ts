@@ -6,14 +6,7 @@ import {
 } from "@/services/authService";
 
 export const register = async (req: Request, res: Response) => {
-  const { name, email, password, role, adminPassword } = req.body;
-  const result = await registerService(
-    name,
-    email,
-    password,
-    role,
-    adminPassword
-  );
+  const result = await registerService(req.body);
   res.status(result.status).json(result);
 };
 

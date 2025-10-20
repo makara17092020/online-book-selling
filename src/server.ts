@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { environment } from "@/config/environment";
+import { Role } from "@/models/role";
 import authRoutes from "@/routes/authRoutes"; //  add this
 import adminRoutes from "@/routes/adminRoutes";
 
@@ -11,7 +12,18 @@ app.use(express.urlencoded({ extended: true }));
 
 mongoose
   .connect(environment.MONGODB_URI)
-  .then(() => console.log("✅ MongoDB connected"))
+  .then(async () => {
+    console.log("✅ MongoDB connected");
+
+    // Initialize default roles
+    const userRole = await Role.findOne({ name: "User" });
+    if (!userRole) await Role.create({ name: "User" });
+
+    const adminRole = await Role.findOne({ name: "Admin" });
+    if (!adminRole) await Role.create({ name: "Admin" });
+
+    console.log("✅ Default roles initialized");
+  })
   .catch((err) => {
     console.error("❌ MongoDB connection failed:", err);
     process.exit(1);
