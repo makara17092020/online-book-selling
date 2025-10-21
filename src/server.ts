@@ -2,8 +2,9 @@ import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { environment } from "@/config/environment";
 import { Role } from "@/models/role";
-import authRoutes from "@/routes/authRoutes"; //  add this
+import authRoutes from "@/routes/authRoutes";
 import adminRoutes from "@/routes/adminRoutes";
+import categoryRoutes from "@/routes/categoryRoutes"; //  Added this line
 
 const app = express();
 
@@ -29,17 +30,17 @@ mongoose
     process.exit(1);
   });
 
-//  Add Auth Routes
+//  Routes
 app.use("/api/auth", authRoutes);
-
-// Add Admin Route
 app.use("/api/admin", adminRoutes);
+app.use("/api/v1/categories", categoryRoutes); //  Added category route
 
+// Health check
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
 
-// Error handler
+//  Global Error Handler
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
   res.status(err.status || 500).json({
