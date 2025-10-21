@@ -5,6 +5,8 @@ import { Role } from "@/models/role";
 import authRoutes from "@/routes/authRoutes";
 import adminRoutes from "@/routes/adminRoutes";
 import categoryRoutes from "@/routes/categoryRoutes"; //  Added this line
+import cartItemRoutes from "@/routes/cartItemRoutes";
+
 
 const app = express();
 
@@ -34,6 +36,8 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/v1/categories", categoryRoutes); //  Added category route
+app.use("/api/v1/cart-items", cartItemRoutes);
+
 
 // Health check
 app.get("/health", (_req: Request, res: Response) => {
