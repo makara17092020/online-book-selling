@@ -25,14 +25,15 @@ export const registerService = async (userData: Partial<IUser>) => {
     return { success: false, status: 500, message: "Default role not found" };
 
   const newUser = await User.create({
-    email,
-    firstName,
-    lastName,
-    userName,
-    password: hashed,
-    roleId: defaultRole._id,
-    phone,
-    age,
+      firstName,
+  lastName,
+  userName,
+  email,
+  password,
+  phone,
+  age,
+  Role,
+
   });
 
   return {

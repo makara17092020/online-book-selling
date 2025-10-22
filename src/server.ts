@@ -1,53 +1,35 @@
-import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { environment } from "@/config/environment";
 import { Role } from "@/models/role";
-import authRoutes from "@/routes/authRoutes"; //  add this
-import adminRoutes from "@/routes/adminRoutes";
+import app from "./app";
 
-const app = express();
+// Initialize default roles
+const initRoles = async () => {
+  const roles = ["User", "Admin"];
+  for (const name of roles) {
+    const exists = await Role.findOne({ name });
+    if (!exists) {
+      await Role.create({ name });
+      console.log(`Role '${name}' created`);
+    }
+  }
+};
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-mongoose
-  .connect(environment.MONGODB_URI)
-  .then(async () => {
+// Connect DB and start server
+const startServer = async () => {
+  try {
+    await mongoose.connect(environment.MONGODB_URI);
     console.log("✅ MongoDB connected");
 
-    // Initialize default roles
-    const userRole = await Role.findOne({ name: "User" });
-    if (!userRole) await Role.create({ name: "User" });
+    await initRoles();
 
-    const adminRole = await Role.findOne({ name: "Admin" });
-    if (!adminRole) await Role.create({ name: "Admin" });
-
-    console.log("✅ Default roles initialized");
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection failed:", err);
+    app.listen(environment.PORT, () => {
+      console.log(`🚀 Server running at http://localhost:${environment.PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ Server startup error:", err);
     process.exit(1);
-  });
+  }
+};
 
-//  Add Auth Routes
-app.use("/api/auth", authRoutes);
-
-// Add Admin Route
-app.use("/api/admin", adminRoutes);
-
-app.get("/health", (_req: Request, res: Response) => {
-  res.json({ ok: true });
-});
-
-// Error handler
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || "Internal Server Error",
-  });
-});
-
-app.listen(environment.PORT, () => {
-  console.log(`🚀 Server running on port ${environment.PORT}`);
-});
+startServer();
