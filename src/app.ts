@@ -4,6 +4,8 @@ import adminRoutes from "@/routes/adminRoutes";
 import bookRoute from "@/routes/bookRoutes";
 import errorHandler from "@/middlewares/errorHandler";
 import userRoutes from "@/routes/userRoutes";
+import orderRoutes from "@/routes/orderRoutes";
+import orderItemRoutes from "@/routes/orderItemRoutes";
 
 const app = express();
 
@@ -16,6 +18,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/books", bookRoute); // corrected to plural for consistency
 app.use("/api/users", userRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/order-items", orderItemRoutes);
 
 // Health check
 app.get("/health", (_req: Request, res: Response) => {
