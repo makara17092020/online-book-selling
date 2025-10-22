@@ -1,12 +1,19 @@
-// import express from "express";
-// import { register, login } from "@/controllers/userController";
+import express from "express";
+import {
+  getAllUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+} from "@/controllers/userController";
 
-// const router = express.Router();
+const router = express.Router();
 
-// // Register new user
-// router.post("/register", register);
+// ✅ CRUD routes
+router.get("/", getAllUsers); // Get all users
+router.get("/:id", getUserById); // Get user by ID
+router.post("/", createUser); // Create new user
+router.put("/:id", updateUser); // Update user
+router.delete("/:id", deleteUser); // Delete user
 
-// // Login existing user
-// router.post("/login", login);
-
-// export default router;
+export default router;

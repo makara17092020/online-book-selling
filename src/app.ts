@@ -3,6 +3,7 @@ import authRoutes from "@/routes/authRoutes";
 import adminRoutes from "@/routes/adminRoutes";
 import bookRoute from "@/routes/bookRoutes";
 import errorHandler from "@/middlewares/errorHandler";
+import userRoutes from "@/routes/userRoutes";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/books", bookRoute); // corrected to plural for consistency
+app.use("/api/users", userRoutes);
 
 // Health check
 app.get("/health", (_req: Request, res: Response) => {
