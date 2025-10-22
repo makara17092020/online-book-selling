@@ -1,46 +1,34 @@
-import express, { Request, Response } from "express";
-import mongoose from "mongoose";
-import { environment } from "@/config/environment";
+import express, { Request, Response, NextFunction } from "express";
 import authRoutes from "@/routes/authRoutes";
+import adminRoutes from "@/routes/adminRoutes";
+import bookRoute from "@/routes/bookRoutes";
 import errorHandler from "@/middlewares/errorHandler";
-import { Role } from "@/models/role";
+import userRoutes from "@/routes/userRoutes";
 
 const app = express();
+
+// Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
 app.use("/api/auth", authRoutes);
-app.get("/api/health", (_req: Request, res: Response) => {
-  res.json({ success: true, message: "API is running" });
+app.use("/api/admin", adminRoutes);
+app.use("/api/books", bookRoute); // corrected to plural for consistency
+app.use("/api/users", userRoutes);
+
+// Health check
+app.get("/health", (_req: Request, res: Response) => {
+  res.json({ ok: true });
 });
-app.use(errorHandler);
 
-// Initialize roles
-const initRoles = async () => {
-  const roles = ["User", "Admin"];
-  for (const name of roles) {
-    const exists = await Role.findOne({ name });
-    if (!exists) {
-      await Role.create({ name });
-      console.log(`Role '${name}' created`);
-    } else {
-      console.log(`Role '${name}' already exists`);
-    }
-  }
-};
+// Global error handler
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+});
 
-// Connect DB and start server
-const startServer = async () => {
-  try {
-    await mongoose.connect(environment.MONGODB_URI);
-    console.log("MongoDB connected");
-    await initRoles();
-    app.listen(environment.PORT, () =>
-      console.log(`Server running at http://localhost:${environment.PORT}`)
-    );
-  } catch (err) {
-    console.error("Server startup error:", err);
-    process.exit(1);
-  }
-};
-
-startServer();
 export default app;

@@ -1,13 +1,11 @@
-import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { environment } from "@/config/environment";
 import { Role } from "@/models/role";
-import authRoutes from "@/routes/authRoutes";
+import authRoutes from "@/routes/authRoutes"; //  add this
 import adminRoutes from "@/routes/adminRoutes";
-import orderRoutes from "@/routes/orderRoute";
-import orderItemRoutes from "@/routes/orderItemRoute";
 
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -17,10 +15,11 @@ mongoose
     console.log("✅ MongoDB connected");
 
     // Initialize default roles
-    if (!(await Role.findOne({ name: "User" })))
-      await Role.create({ name: "User" });
-    if (!(await Role.findOne({ name: "Admin" })))
-      await Role.create({ name: "Admin" });
+    const userRole = await Role.findOne({ name: "User" });
+    if (!userRole) await Role.create({ name: "User" });
+
+    const adminRole = await Role.findOne({ name: "Admin" });
+    if (!adminRole) await Role.create({ name: "Admin" });
 
     console.log("✅ Default roles initialized");
   })
@@ -29,14 +28,15 @@ mongoose
     process.exit(1);
   });
 
-// Routes
+//  Add Auth Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/order-items", orderItemRoutes);
 
-// Health check
-app.get("/health", (_req: Request, res: Response) => res.json({ ok: true }));
+// Add Admin Route
+app.use("/api/admin", adminRoutes);
+
+app.get("/health", (_req: Request, res: Response) => {
+  res.json({ ok: true });
+});
 
 // Error handler
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -47,7 +47,6 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   });
 });
 
-// Start server
 app.listen(environment.PORT, () => {
   console.log(`🚀 Server running on port ${environment.PORT}`);
 });
