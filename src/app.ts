@@ -7,6 +7,8 @@ import userRoutes from "@/routes/userRoutes";
 import orderRoutes from "@/routes/orderRoutes";
 import orderItemRoutes from "@/routes/orderItemRoutes";
 import categoryRoutes from "@/routes/categoryRoutes"; // Added
+import cartRoute from "@/routes/cartRoutes";
+import cartItemRoutes from "@/routes/cartItemRoutes";
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/order-items", orderItemRoutes);
 app.use("/api/v1/categories", categoryRoutes); // Added
+app.use("/api/carts", cartRoute);
+app.use("/api", cartItemRoutes);
 
 // Health check
 app.get("/health", (_req: Request, res: Response) => {
