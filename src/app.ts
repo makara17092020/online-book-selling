@@ -9,6 +9,7 @@ import orderItemRoutes from "@/routes/orderItemRoutes";
 import categoryRoutes from "@/routes/categoryRoutes"; // Added
 import cartRoute from "@/routes/cartRoutes";
 import cartItemRoutes from "@/routes/cartItemRoutes";
+import adminRoute from "@/routes/adminRoutes";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/order-items", orderItemRoutes);
 app.use("/api/v1/categories", categoryRoutes); // Added
 app.use("/api/carts", cartRoute);
 app.use("/api", cartItemRoutes);
+app.use("/api/admin", adminRoute);
 
 // Health check
 app.get("/health", (_req: Request, res: Response) => {

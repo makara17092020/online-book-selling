@@ -1,18 +1,18 @@
-import { Types } from "mongoose";
-
-// User interface
 export interface IUser {
+  _id?: string;
   email: string;
   firstName: string;
   lastName: string;
   userName: string;
   password: string;
-  roleId: Types.ObjectId; // 👈 use ObjectId instead of string
-  phone?: number;
+  phone?: string | number;
   age?: number;
-}
-
-// Role interface
-export interface IRole {
-  name: string;
+  address?: string;
+  avatarUrl?: string;
+  roleId?: "Admin" | "Customer"; // stored in DB
+  role?: "Admin" | "Customer"; // optional input during registration
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  lastLogin?: Date;
 }
